@@ -20,6 +20,7 @@ class BusRoute(object):
     @property
     def stops(self):
         return self._stops
+
     @property
     def route_path(self):
         return self._route_path

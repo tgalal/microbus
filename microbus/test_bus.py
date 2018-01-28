@@ -1,6 +1,6 @@
 import unittest
 import microbus
-from microbus.bus import Bus
+from microbus.bus import Bus, SimultaneousRoutesException
 from microbus.test_stop import CallbackFunc
 
 class WaitForBusCallback(CallbackFunc):
@@ -41,21 +41,101 @@ class BusTest(unittest.TestCase):
         self.busRoute = microbus.BusRoute("test", self.stops)
         self.bus = Bus()
 
-    def test_schedule(self):
-        self.bus.schedule(self.busRoute)
-        self.bus.end()
-        self.bus.standby()
+    # def test_schedule(self):
+    #     self.bus.schedule(self.busRoute)
+    #     self.bus.end()
+    #     self.bus.standby()
+    #
+    #     self.assertEqual(0, len(self.stop1.departuringData))
+    #     self.assertEqual(0, len(self.stop2.departuringData))
+    #
+    #     self.assertEqual(0, len(self.stop1ArrivingPassengersHandler))
+    #     self.assertEqual(1, len(self.stop2ArrivingPassengersHandler))
+    #     self.assertEqual(1, len(self.stop3ArrivingPassengersHandler))
+    #
+    #     self.assertEqual(self.stop1Passengers, list(self.stop2ArrivingPassengersHandler[0][0]))
+    #     self.assertEqual(self.stop2Passengers + self.stop1Passengers, list(self.stop3ArrivingPassengersHandler[0][0]))
+    #     self.assertEqual(self.stop3Passengers + self.stop2Passengers + self.stop1Passengers, self.stop3.departuringData)
 
-        self.assertEqual(0, len(self.stop1.departuringData))
-        self.assertEqual(0, len(self.stop2.departuringData))
+    def test_simulatenous_routes(self):
+        weg = self.bus.depart(self.busRoute)
+        next(weg)
+        try:
+            # we are in middle of route, this should fail
+            self.bus.depart(self.busRoute)
+            raise(AssertionError("shouldn't allow"))
+        except SimultaneousRoutesException:
+            pass
+        # finish route
+        for _ in weg:
+            pass
+        # this should succeed, because we finished the curr route
+        weg1 = self.bus.depart(self.busRoute)
+        # this should succeed, because we didn't start our rout yet
+        weg2 = self.bus.depart(self.busRoute)
 
-        self.assertEqual(0, len(self.stop1ArrivingPassengersHandler))
-        self.assertEqual(1, len(self.stop2ArrivingPassengersHandler))
-        self.assertEqual(1, len(self.stop3ArrivingPassengersHandler))
+        weg3 = self.bus.depart(self.busRoute)
+        next(weg2)
 
-        self.assertEqual(self.stop1Passengers, list(self.stop2ArrivingPassengersHandler[0][0]))
-        self.assertEqual(self.stop2Passengers + self.stop1Passengers, list(self.stop3ArrivingPassengersHandler[0][0]))
-        self.assertEqual(self.stop3Passengers + self.stop2Passengers + self.stop1Passengers, self.stop3.departuringData)
+        try:
+            # this should fail, bec we're in mid weg2
+            next(weg1)
+        except SimultaneousRoutesException:
+            pass
+        weg2.close()
+        next(weg3)
+        weg3.close()
+        self.bus.depart(self.busRoute)
+
+    def test_completedRoutes(self):
+        self.assertEqual(0, self.bus.completed_routes)
+        weg = self.bus.depart(self.busRoute)
+        self.assertEqual(0, self.bus.completed_routes)
+        for _ in weg:
+            pass
+        self.assertEqual(1, self.bus.completed_routes)
+
+        for _ in self.bus.depart(self.busRoute):
+            pass
+
+        self.assertEqual(2, self.bus.completed_routes)
+
+        weg = self.bus.depart(self.busRoute)
+        next(weg)
+        weg.close()
+        self.assertEqual(2, self.bus.completed_routes)
+
+        weg = self.bus.depart(self.busRoute)
+        next(weg)
+        self.assertEqual(2, self.bus.completed_routes)
+        next(weg)
+        self.assertEqual(2, self.bus.completed_routes)
+        next(weg)
+        self.assertEqual(2, self.bus.completed_routes)
+        try:
+            next(weg)
+        except StopIteration:
+            pass
+
+        self.assertEqual(3, self.bus.completed_routes)
+
+    def test_add_to_history(self):
+        weg = self.bus.depart(self.busRoute)
+        self.assertEqual(0, len(self.bus.prev_routes))
+        weg.close()
+        self.assertEqual(0, len(self.bus.prev_routes))
+
+        route1 = self.busRoute
+        route2 = route1[::-1]
+        route3 = route2[1:]
+        busmem = Bus(keep_prev=2)
+        weg = busmem.depart(route1)
+        weg.close()
+        # self.assertEqual([route1, None], busmem.prev_routes)
+        # busmem.depart(route2).close()
+        # self.assertEqual([route2, route1], busmem.prev_routes)
+
+
 
     def test_depart(self):
         gen = self.bus.depart(self.busRoute)
@@ -102,43 +182,43 @@ class BusTest(unittest.TestCase):
         self.bus.unboard(self.stop1Passengers[:], self.stop2)
         self.assertEqual(self.stop1Passengers, list(self.stop2ArrivingPassengersHandler[0][0]))
 
-    def test_yield(self):
-        standingBy = self.bus.standby2()
-        next(standingBy)
-        gen = standingBy.send(self.busRoute)
-
-        stop, remainingRoute = next(gen)
-
-        self.assertEqual(stop, self.stop1)
-        self.assertEqual(2, len(remainingRoute))
-        self.assertEqual(self.stop2, remainingRoute[0])
-        self.assertEqual(self.stop3, remainingRoute[1])
-
-        stop, remainingRoute = next(gen)
-        self.assertEqual(stop, self.stop2)
-        self.assertEqual(1, len(remainingRoute))
-        self.assertEqual(self.stop3, remainingRoute[0])
-
-        stop, remainingRoute = next(gen)
-        self.assertEqual(stop, self.stop3)
-        self.assertEqual(0, len(remainingRoute))
-
-        try:
-            next(gen)
-            raise AssertionError()
-        except StopIteration:
-            pass
-
-        self.assertEqual(0, len(self.stop1.departuringData))
-        self.assertEqual(0, len(self.stop2.departuringData))
-
-        self.assertEqual(0, len(self.stop1ArrivingPassengersHandler))
-        self.assertEqual(1, len(self.stop2ArrivingPassengersHandler))
-        self.assertEqual(1, len(self.stop3ArrivingPassengersHandler))
-
-        self.assertEqual(self.stop1Passengers, list(self.stop2ArrivingPassengersHandler[0][0]))
-        self.assertEqual(self.stop2Passengers + self.stop1Passengers, list(self.stop3ArrivingPassengersHandler[0][0]))
-        self.assertEqual(self.stop3Passengers + self.stop2Passengers + self.stop1Passengers, self.stop3.departuringData)
+    # def test_yield(self):
+    #     standingBy = self.bus.standby2()
+    #     next(standingBy)
+    #     gen = standingBy.send(self.busRoute)
+    #
+    #     stop, remainingRoute = next(gen)
+    #
+    #     self.assertEqual(stop, self.stop1)
+    #     self.assertEqual(2, len(remainingRoute))
+    #     self.assertEqual(self.stop2, remainingRoute[0])
+    #     self.assertEqual(self.stop3, remainingRoute[1])
+    #
+    #     stop, remainingRoute = next(gen)
+    #     self.assertEqual(stop, self.stop2)
+    #     self.assertEqual(1, len(remainingRoute))
+    #     self.assertEqual(self.stop3, remainingRoute[0])
+    #
+    #     stop, remainingRoute = next(gen)
+    #     self.assertEqual(stop, self.stop3)
+    #     self.assertEqual(0, len(remainingRoute))
+    #
+    #     try:
+    #         next(gen)
+    #         raise AssertionError()
+    #     except StopIteration:
+    #         pass
+    #
+    #     self.assertEqual(0, len(self.stop1.departuringData))
+    #     self.assertEqual(0, len(self.stop2.departuringData))
+    #
+    #     self.assertEqual(0, len(self.stop1ArrivingPassengersHandler))
+    #     self.assertEqual(1, len(self.stop2ArrivingPassengersHandler))
+    #     self.assertEqual(1, len(self.stop3ArrivingPassengersHandler))
+    #
+    #     self.assertEqual(self.stop1Passengers, list(self.stop2ArrivingPassengersHandler[0][0]))
+    #     self.assertEqual(self.stop2Passengers + self.stop1Passengers, list(self.stop3ArrivingPassengersHandler[0][0]))
+    #     self.assertEqual(self.stop3Passengers + self.stop2Passengers + self.stop1Passengers, self.stop3.departuringData)
 
 
 

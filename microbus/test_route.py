@@ -1,6 +1,7 @@
 import microbus
 import unittest
 
+
 class BusRouteTest(unittest.TestCase):
     def setUp(self):
         self.stop1 = microbus.BusStop("stop1")
