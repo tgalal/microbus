@@ -1,5 +1,6 @@
 from zyklus import Zyklus
-from microbus import BusRoute, BusAssignment
+from microbus import BusRoute
+from microbus.assignment import BusAssignment
 
 
 class BusScheduler(object):
