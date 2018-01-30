@@ -5,7 +5,9 @@ In each stop, passengers unboard, and then waiting passengers board the bus.
 
 ## Why
 
-For cases where something like a [Pipeline](https://en.wikipedia.org/wiki/Pipeline_(computing)) design is in use, microbus could serve as an independent, detached data carrying mechanism across the different stages of the pipeline. A pipeline is a BusRoute, a processing stage is a BusStop, and the bus carries data from/to different stages/stops in pipeline route
+For cases where something like a [Pipeline](https://en.wikipedia.org/wiki/Pipeline_(computing)) design is in use, microbus could serve as an independent, detached data carrying mechanism across the different stages of the pipeline. A BusRoute maps to stages within a Pipeline, a processing stage is a BusStop, and the bus carries data from/to different stages/stops in pipeline route
+
+Note that this is not a pipeline creation framework. This is just a data carrying mechanism across stages of an existing pipeline model or similar.
 
 
 ## Installation
