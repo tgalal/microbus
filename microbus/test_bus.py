@@ -10,7 +10,7 @@ class WaitForBusCallback(CallbackFunc):
 
     def __call__(self, *args, **kwargs):
         super(WaitForBusCallback, self).__call__(*args, **kwargs)
-        for item in args[0]:
+        for item in args[1]:
             self.stop.wait_for_bus(item)
 
 class BusTest(unittest.TestCase):
@@ -38,7 +38,7 @@ class BusTest(unittest.TestCase):
         list(map(lambda p: self.stop2.wait_for_bus(p), self.stop2Passengers))
         list(map(lambda p: self.stop3.wait_for_bus(p), self.stop3Passengers))
 
-        self.busRoute = microbus.BusRoute("test", self.stops)
+        self.busRoute = microbus.BusRoute(self.stops, name="test")
         self.bus = Bus()
 
     # def test_schedule(self):
@@ -169,8 +169,8 @@ class BusTest(unittest.TestCase):
         self.assertEqual(1, len(self.stop2ArrivingPassengersHandler))
         self.assertEqual(1, len(self.stop3ArrivingPassengersHandler))
 
-        self.assertEqual(self.stop1Passengers, list(self.stop2ArrivingPassengersHandler[0][0]))
-        self.assertEqual(self.stop2Passengers + self.stop1Passengers, list(self.stop3ArrivingPassengersHandler[0][0]))
+        self.assertEqual(self.stop1Passengers, list(self.stop2ArrivingPassengersHandler[0][1]))
+        self.assertEqual(self.stop2Passengers + self.stop1Passengers, list(self.stop3ArrivingPassengersHandler[0][1]))
         self.assertEqual(self.stop3Passengers + self.stop2Passengers + self.stop1Passengers, self.stop3.departuringData)
 
     def test_board(self):
@@ -180,7 +180,7 @@ class BusTest(unittest.TestCase):
 
     def test_unboard(self):
         self.bus.unboard(self.stop1Passengers[:], self.stop2)
-        self.assertEqual(self.stop1Passengers, list(self.stop2ArrivingPassengersHandler[0][0]))
+        self.assertEqual(self.stop1Passengers, list(self.stop2ArrivingPassengersHandler[0][1]))
 
     # def test_yield(self):
     #     standingBy = self.bus.standby2()

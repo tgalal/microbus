@@ -37,7 +37,7 @@ class TestBusStop(unittest.TestCase):
         self.stop.wait_for_bus("b")
         self.stop.arrive([1, 2])
         self.assertEqual(1, len(self.arrivingHandler))
-        self.assertEqual([1, 2], self.arrivingHandler[0][0])
+        self.assertEqual([1, 2], self.arrivingHandler[0][1])
 
     def test_iter(self):
         self.stop.wait_for_bus("a")

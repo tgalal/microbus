@@ -8,7 +8,7 @@ class BusRouteTest(unittest.TestCase):
         self.stop2 = microbus.BusStop("stop2")
         self.stop3 = microbus.BusStop("stop3")
         self.stops = [self.stop1, self.stop2, self.stop3]
-        self.busRoute = microbus.BusRoute("test", self.stops)
+        self.busRoute = microbus.BusRoute(self.stops, "test")
 
     def test__get__item(self):
         self.assertEqual(self.stop2, self.busRoute[1])
@@ -23,12 +23,12 @@ class BusRouteTest(unittest.TestCase):
         for s in self.stops:
             self.assertTrue(s in self.busRoute)
 
-        self.assertTrue(microbus.BusRoute("", [self.stop1, self.stop2]) in self.busRoute)
-        self.assertTrue(microbus.BusRoute("", [self.stop2, self.stop3]) in self.busRoute)
-        self.assertFalse(microbus.BusRoute("", [self.stop1, self.stop3]) in self.busRoute)
-        self.assertFalse(microbus.BusRoute("", [self.stop2, self.stop1]) in self.busRoute)
-        self.assertFalse(microbus.BusRoute("", [self.stop3, self.stop2]) in self.busRoute)
-        self.assertFalse(microbus.BusRoute("", [self.stop3, self.stop1]) in self.busRoute)
+        self.assertTrue(microbus.BusRoute([self.stop1, self.stop2]) in self.busRoute)
+        self.assertTrue(microbus.BusRoute([self.stop2, self.stop3]) in self.busRoute)
+        self.assertFalse(microbus.BusRoute([self.stop1, self.stop3]) in self.busRoute)
+        self.assertFalse(microbus.BusRoute([self.stop2, self.stop1]) in self.busRoute)
+        self.assertFalse(microbus.BusRoute([self.stop3, self.stop2]) in self.busRoute)
+        self.assertFalse(microbus.BusRoute([self.stop3, self.stop1]) in self.busRoute)
 
     def test___len__(self):
         self.assertEqual(3, len(self.busRoute))

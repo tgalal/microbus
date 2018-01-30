@@ -1,5 +1,5 @@
 class BusStop(object):
-    def __init__(self, name, arriving_passengers_handler=None, waiting_passengers_callback=None):
+    def __init__(self, name="", arriving_passengers_handler=None, waiting_passengers_callback=None):
         self.name = name
         self.departuringData = []
         self.arrivingPassengersHandler = arriving_passengers_handler
@@ -25,4 +25,4 @@ class BusStop(object):
 
     def arrive(self, passengers):
         if self.arrivingPassengersHandler is not None:
-            self.arrivingPassengersHandler(passengers)
+            self.arrivingPassengersHandler(self, passengers)

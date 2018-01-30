@@ -2,7 +2,8 @@ from microbus import BusStop
 
 
 class BusRoute(object):
-    def __init__(self, name, stops):
+    def __init__(self, stops, name=""):
+        assert type(stops) in (list, tuple), "%s is not list/type" % type(stops)
         self.name = name
         self._stops = stops[:]
         self._route_path = "_".join(map(lambda stop: stop.id(), stops))
@@ -14,7 +15,7 @@ class BusRoute(object):
         if type(item) is int:
             return self.stops[item]
         elif isinstance(item, slice):
-            return BusRoute("sub_%s" % self.name, self.stops[item])
+            return BusRoute(self.stops[item], "sub_%s" % self.name)
         raise ValueError("Invalid index type: %s" % type(item))
 
     @property

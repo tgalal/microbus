@@ -10,7 +10,7 @@ class BusAssignmentTest(unittest.TestCase):
         self.stop2 = microbus.BusStop("stop2")
         self.stop3 = microbus.BusStop("stop3")
         self.stops = [self.stop1, self.stop2, self.stop3]
-        self.busRoute1 = microbus.BusRoute("test", self.stops)
+        self.busRoute1 = microbus.BusRoute(self.stops, name="test")
         self.busRoute2 = self.busRoute1[::-1]
         self.bus = Bus(keep_prev=1)
 
