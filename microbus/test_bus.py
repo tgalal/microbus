@@ -136,6 +136,10 @@ class BusTest(unittest.TestCase):
         # self.assertEqual([route2, route1], busmem.prev_routes)
 
 
+    def test_iteration(self):
+        for _,_ in self.bus.depart(self.busRoute):
+            pass
+        self.assertEqual(1, self.bus.completed_routes)
 
     def test_depart(self):
         gen = self.bus.depart(self.busRoute)
