@@ -42,7 +42,7 @@ route = BusRoute((stop1, stop2, stop3))
 ### Bus
 
 A Bus is what traverses a BusRoute, where once departed, it should transit at each stop and behave as described
-above (see [BusRoute](#BusRoute)).
+above (see [BusRoute](#busroute)).
 
 A Bus cannot depart 2 routes at the same time. It has to either complete departing the route or cancel its trip
 before departing a new route.
