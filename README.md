@@ -104,11 +104,10 @@ scheduler.schedule(route1)
 scheduler.schedule(route2)
 scheduler.run()
 ```
+The bus will depart all scheduled routes in the same thread where the scheduler's ```run``` method has been called.
 
-Running a scheduler will block the invoking thread, therefore it might make sense
+Since running a scheduler will block the invoking thread, it might make sense
 to run it in background. Of course this depends on your use case, for example whether you have an existing event loop.
-
-The bus will depart all scheduled route in the same thread where the scheduler's ```run``` method is called.
 
 
 ```python
