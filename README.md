@@ -3,6 +3,11 @@
 A bus transports passengers (data) across a route. A route consists of 1 or more stops.
 In each stop, passengers unboard, and then waiting passengers board the bus.
 
+## Why
+
+For cases where something like a [Pipeline](https://en.wikipedia.org/wiki/Pipeline_(computing)) design is in use, microbus could serve as an independent, detached data carrying mechanism across the different stages of the pipeline. A pipeline is a BusRoute, a processing stage is a BusStop, and the bus carries data from/to different stages/stops in pipeline route
+
+
 ## Installation
 
 ```bash
