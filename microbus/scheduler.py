@@ -8,9 +8,9 @@ class BusScheduler(object):
         self.bus = bus
         self.zyklus = Zyklus()
 
-    def schedule(self, route):
+    def schedule(self, route, driver=None):
         assert type(route) is BusRoute
-        self.schedule_assignment(BusAssignment(self.bus, route))
+        self.schedule_assignment(BusAssignment(self.bus, route, driver))
 
     def schedule_assignment(self, assignment):
         self.zyklus.post(assignment)

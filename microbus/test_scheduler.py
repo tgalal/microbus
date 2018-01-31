@@ -32,7 +32,33 @@ class BusSchedulerTest(unittest.TestCase):
         self.scheduler.schedule(self.busRoute1)
         self.scheduler.schedule(self.busRoute2)
         self.exec_scheduler_and_return()
+        self.assertEqual(2, self.bus.completed_routes)
         self.assertEqual([self.busRoute2, self.busRoute1], self.bus.prev_routes)
+
+    def test_schedule_with_driver(self):
+        def drive_mid(trip):
+            next(trip)
+
+        def drive(trip):
+            for _ in trip:
+                pass
+
+        def cancel_trip_drive(trip):
+            trip.close()
+
+        def cancel_mid_trip_drive(trip):
+            next(trip)
+            trip.close()
+
+        self.scheduler.schedule(self.busRoute1, driver=drive)
+        self.scheduler.schedule(self.busRoute2, driver=cancel_mid_trip_drive)
+        self.scheduler.schedule(self.busRoute1, driver=cancel_trip_drive)
+        self.scheduler.schedule(self.busRoute2, driver=drive)
+        self.scheduler.schedule(self.busRoute2, driver=drive_mid)
+        self.scheduler.schedule(self.busRoute2, driver=drive)
+        self.exec_scheduler_and_return()
+        self.assertEqual(3, self.bus.completed_routes)
+        self.assertEqual([self.busRoute2, self.busRoute2], self.bus.prev_routes)
 
     def test_run(self):
         self.scheduler.schedule(self.busRoute1)

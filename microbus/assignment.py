@@ -1,12 +1,16 @@
 import microbus
 from microbus.bus import Bus
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class BusAssignment(object):
-    def __init__(self, bus, route):
+    def __init__(self, bus, route, driver = None):
         self.bus = bus
         self.route = route
         self._finished = False
+        self.driver = driver
 
     @property
     def finished(self):
@@ -25,6 +29,13 @@ class BusAssignment(object):
         return False
 
     def __call__(self, *args, **kwargs):
-        for _ in self.bus.depart(self.route):
-            pass
+        if self.driver:
+            trip = self.bus.depart(self.route)
+            self.driver(trip)
+            if self.bus.current_route is not None:
+                logger.warn("Route was not completed by driver, cancelling route")
+                trip.close()
+        else:
+            for _ in self.bus.depart(self.route):
+                pass
         self._finished = True

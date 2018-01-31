@@ -38,3 +38,44 @@ class BusAssignmentTest(unittest.TestCase):
         assignment()
         self.assertTrue(self.busRoute1 in self.bus.prev_routes)
         self.assertEqual(1, self.bus.completed_routes)
+
+    def test_call_with_driver(self):
+        assigned_trips = []
+
+        def fulltrip_driver(trip):
+            assigned_trips.append(trip)
+            for _ in trip:
+                pass
+
+        def midtrip_driver(trip):
+            assigned_trips.append(trip)
+            next(trip)
+            trip.close()
+
+        def careless_driver(trip):
+            assigned_trips.append(trip)
+            next(trip)
+
+        assignment = BusAssignment(self.bus, self.busRoute1, driver=fulltrip_driver)
+        assignment()
+        self.assertEqual(1, self.bus.completed_routes)
+        self.assertEqual(1, len(assigned_trips))
+        self.assertTrue(self.busRoute1 in self.bus.prev_routes)
+
+        assignment = BusAssignment(self.bus, self.busRoute2, driver=midtrip_driver)
+        assignment()
+        self.assertEqual(1, self.bus.completed_routes)
+        self.assertEqual(2, len(assigned_trips))
+        self.assertTrue(self.busRoute2 in self.bus.prev_routes)
+
+        assignment = BusAssignment(self.bus, self.busRoute1, driver=careless_driver)
+        assignment()
+        self.assertEqual(1, self.bus.completed_routes)
+        self.assertEqual(3, len(assigned_trips))
+        self.assertTrue(self.busRoute1 in self.bus.prev_routes)
+
+        assignment = BusAssignment(self.bus, self.busRoute2, driver=fulltrip_driver)
+        assignment()
+        self.assertEqual(2, self.bus.completed_routes)
+        self.assertEqual(4, len(assigned_trips))
+        self.assertTrue(self.busRoute2 in self.bus.prev_routes)
