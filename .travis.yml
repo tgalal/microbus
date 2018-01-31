@@ -35,4 +35,5 @@ cache:
     - $HOME/.cache/pip
 branches:
   only:
-    - master
+  - gh-pages
+  - /.*/
