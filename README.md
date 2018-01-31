@@ -102,8 +102,8 @@ you get a ```SimultaneousRoutesException```**
 
 #### BusScheduler
 
-Through a ```BusScheduler``` you can safely schedule multiple routes for a bus as you wish. The scheduler will
-take care of completing a scheduled route and jump to next scheduled one if/when scheduled.
+Through a ```BusScheduler``` you can safely schedule multiple routes for a bus as you wish. The scheduler will normally
+take care of completing a scheduled route and automatically jump to the next scheduled one if/when available.
 
 ```python
 scheduler = BusScheduler(bus)
@@ -111,15 +111,28 @@ scheduler.schedule(route1)
 scheduler.schedule(route2)
 scheduler.run()
 ```
-The bus will depart all scheduled routes in the same thread where the scheduler's ```run``` method has been called.
 
-Since running a scheduler will block the invoking thread, it might make sense
+Control over a departed route (a trip) can be delegated to a function for whenever the bus departs this route. This can 
+be specified as a callback function for ```schedule``` methods's ```driver``` argument. The driver function when 
+invoked will get passed a reference to the departed trip generator and should then either complete the trip itself or 
+abort it [see Bus](#bus), otherwise the scheduler will abort the trip if it was neither completed nor cancelled.
+
+```python
+def drive(trip):
+    for _ in trip:
+        pass
+
+scheduler = BusScheduler(bus)
+scheduler.schedule(route1, driver=drive)
+scheduler.schedule(route2, driver=drive)
+scheduler.run()
+```
+
+Running a scheduler will block the invoking thread, therefore it might make sense
 to run it in background. Of course this depends on your use case, for example whether you have an existing event loop.
-
 
 ```python
 import threading
-
 scheduler = BusScheduler(bus)
 threading.Thread(target=scheduler.run).start()
 
