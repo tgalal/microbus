@@ -26,6 +26,7 @@ Passengers already waiting at stop will then board the bus.
 A stop can have a callback for handling arriving passengers, and a callback, triggered once there are passengers waiting for the bus.
 
 ```python
+from microbus import BusStop
 stop = BusStop(
     arriving_passengers_handler=lambda stop, passengers: None,
     waiting_passengers_callback=lambda stop: None
@@ -40,6 +41,8 @@ Except for the first and last stop, in each intermediate stop it will drop board
 For the first stop, it will only board waiting passengers, and in the last stop it will only unboard passengers.
 
 ```python
+from microbus import BusStop, BusRoute
+
 stop1 = BusStop()
 stop2 = BusStop()
 stop3 = BusStop()
@@ -58,6 +61,7 @@ Once a bus departs, control is given back to the invoker in form of a generator,
 will traverse to next stop:
 
 ```python
+from microbus import Bus
 
 bus = Bus()
 trip = bus.depart(route)
@@ -106,6 +110,8 @@ Through a ```BusScheduler``` you can safely schedule multiple routes for a bus a
 take care of completing a scheduled route and automatically jump to the next scheduled one if/when available.
 
 ```python
+from microbus.scheduler import BusScheduler
+
 scheduler = BusScheduler(bus)
 scheduler.schedule(route1)
 scheduler.schedule(route2)
@@ -118,6 +124,8 @@ invoked will get passed a reference to the departed trip generator and should th
 abort it [see Bus](#bus), otherwise the scheduler will abort the trip if it was neither completed nor cancelled.
 
 ```python
+from microbus.scheduler import BusScheduler
+
 def drive(trip):
     for _ in trip:
         pass
@@ -132,7 +140,9 @@ Running a scheduler will block the invoking thread, therefore it might make sens
 to run it in background. Of course this depends on your use case, for example whether you have an existing event loop.
 
 ```python
+from microbus.scheduler import BusScheduler
 import threading
+
 scheduler = BusScheduler(bus)
 threading.Thread(target=scheduler.run).start()
 
@@ -147,3 +157,14 @@ A ```DisjointRoutesBusScheduler``` has a similar API to BusScheduler. The only d
 will not schedule routes that are either:
 - Already scheduled and not yet departed
 - A subset of the route the bus is currently traversing, where the bus hasn't reached yet the first stop of that subset.
+
+
+```python
+from microbus.scheduler_disjoint import DisjointRoutesBusScheduler
+
+scheduler = DisjointRoutesBusScheduler(bus)
+scheduler.schedule(route1)
+scheduler.schedule(route1) # will not be scheduled
+scheduler.schedule(route2)
+scheduler.run()
+```
